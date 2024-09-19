@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    networks:
+      my_network:
+        ipv4_address: 172.28.1.2
+    restart: always
+    ports:
+      - "8001:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  sonarr:
+    image: linuxserver/sonarr
+    networks:
+      my_network:
+        ipv4_address: 172.28.1.3
+    restart: always
+    ports:
+      - "8002:8989"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8989"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  portainer:
+    image: portainer/portainer-ce
+    networks:
+      my_network:
+        ipv4_address: 172.28.1.4
+    restart: always
+    ports:
+      - "8003:9000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  apache:
+    image: httpd:latest
+    networks:
+      my_network:
+        ipv4_address: 172.28.1.5
+    restart: always
+    ports:
+      - "8004:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: ./frontend  # Build the Nginx image with the index.html
+    networks:
+      my_network:
+        ipv4_address: 172.28.1.6
+    restart: always
+    ports:
+      - "8000:80"  # Expose frontend on port 8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  my_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.1.0/24
+
